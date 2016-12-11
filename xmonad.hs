@@ -51,6 +51,7 @@ import XMonad.Util.Loggers
 import XMonad.Util.Run
 import XMonad.Util.Scratchpad
 import XMonad.Util.NamedScratchpad
+import XMonad.Util.Paste
 import XMonad.Actions.CycleWS
 import XMonad.Actions.ShowText
 import XMonad.Actions.GridSelect
@@ -83,7 +84,7 @@ main = do
 	botLeftBar  <- dzenSpawnPipe $ dzenBotLeftFlags r
 	botRightBar <- dzenSpawnPipe $ dzenBotRightFlags r
 	xmonad $ myUrgencyHook defaultConfig
-		{ terminal           = "/usr/bin/urxvt" --default terminal
+		{ terminal           = "/usr/bin/urxvtc" --default terminal
 		, modMask            = mod4Mask          --default modMask
 		, focusFollowsMouse  = True              --focus follow config
 		, clickJustFocuses   = True              --focus click config
@@ -485,7 +486,7 @@ manageWindows = composeAll . concat $
 		myAlt3S   = ["Amule", "Transmission-gtk"]
 		myFloatCC = ["MPlayer", "mplayer2", "File-roller", "zsnes", "Gcalctool", "Exo-helper-1"
 		            , "Gksu", "Galculator", "Nvidia-settings", "XFontSel", "XCalc", "XClock"
-		            , "Ossxmix", "Xvidcap", "Main", "Wicd-client.py"]
+		            , "Ossxmix", "Xvidcap", "Main", "Wicd-client.py", "Chromium"]
 		myFloatCN = ["Choose a file", "Open Image", "File Operation Progress", "Firefox Preferences"
 		            , "Preferences", "Search Engines", "Set up sync", "Passwords and Exceptions"
 		            , "Autofill Options", "Rename File", "Copying files", "Moving files"
@@ -561,7 +562,7 @@ myTopRightLogHook h = dynamicLogWithPP defaultPP
 	{ ppOutput  = hPutStrLn h
 	, ppOrder   = \(_:_:_:x) -> x
 	, ppSep     = " "
-	, ppExtras  = [ myUptimeL, myDateL ]
+	, ppExtras  = [ myUptimeL, myDateL]
 	}
 
 -- Dzen bottom left bar flags
@@ -650,6 +651,7 @@ myDateL =
 	(dzenBoxStyleL whiteBoxPP   $ date $ "%Y^fg(" ++ colorGray ++ ").^fg()%m^fg(" ++ colorGray ++ ").^fg()^fg(" ++ colorBlue ++ ")%d^fg()") ++!
 	(dzenBoxStyleL whiteBoxPP   $ date $ "%H^fg(" ++ colorGray ++ "):^fg()%M^fg(" ++ colorGray ++ "):^fg()^fg(" ++ colorGreen ++ ")%S^fg()") ++!
 	(dzenClickStyleL calendarCA $ dzenBoxStyleL blueBoxPP $ labelL "CALENDAR")
+
 myUptimeL =
 	(dzenBoxStyleL blue2BoxPP   $ labelL "UPTIME") ++!
 	(dzenBoxStyleL whiteBoxPP uptime)
@@ -689,13 +691,14 @@ myKeys conf@(XConfig {XMonad.modMask = modMask}) = M.fromList $
 	[((modMask .|. shiftMask, xK_q), killAndExit)                        --Quit xmonad
 	, ((modMask, xK_q), killAndRestart)                                  --Restart xmonad
 	, ((0, xK_Pause), killAndRestart)
-	, ((mod1Mask, xK_F2), shellPrompt myXPConfig)                        --Launch Xmonad shell prompt
+	, ((mod1Mask, xK_space), shellPrompt myXPConfig)                     --Launch Xmonad shell prompt
 	, ((modMask, xK_F2), xmonadPrompt myXPConfig)                        --Launch Xmonad prompt
-	, ((mod1Mask, xK_F3), manPrompt myXPConfig)                          --Launch man prompt
+	, ((mod1Mask, xK_F3), manPrompt myXPConfig)                          --Launch man promp
 	, ((modMask, xK_g), goToSelected $ myGSConfig myColorizer)           --Launch GridSelect
 	, ((modMask, xK_masculine), scratchPad)                              --Scratchpad (0x0060 = grave key)
 	, ((modMask, 0x0060), scratchPad)
-	, ((modMask .|. shiftMask, xK_Return), spawn $ XMonad.terminal conf) --Launch default terminal
+        , ((0, xK_Insert), pasteSelection)                                   -- paste selection via Insert key
+        , ((modMask .|. shiftMask, xK_Return), spawn $ XMonad.terminal conf) --Launch default terminal
 	--Window management bindings
 	, ((modMask, xK_c), kill)                                                 --Close focused window
 	, ((mod1Mask, xK_F4), kill)
